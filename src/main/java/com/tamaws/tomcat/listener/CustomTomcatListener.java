@@ -5,6 +5,8 @@ import org.apache.catalina.LifecycleListener;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,20 +33,36 @@ public class CustomTomcatListener implements LifecycleListener {
         try {
             String event = lifecycleEvent.getType();
             LOG.log(Level.INFO,"Tomcat Events: " + (++counter) + " :: " + event);
-            if(event.equals("periodic")) {
-                LOG.log(Level.INFO, "Hey I've started");
+            LOG.log(Level.INFO,"Data: " + lifecycleEvent.getSource() + " --- " + lifecycleEvent.getData());
+            if(event.equals("after_start")) {
 
-                URL url = new URL("http://localhost:8080/web-app/hello");
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("GET");
-
-                int status = con.getResponseCode();
-                LOG.log(Level.INFO, "Call activate endpoint status: " + status);
-
+                new Timer().schedule(getActivateTask(), 10000);
                 lifecycleEvent.getLifecycle().removeLifecycleListener(this);
             }
         } catch (Exception e) {
             LOG.log(Level.INFO, "Event handler has failed" + e.getMessage());
         }
+    }
+
+    private TimerTask getActivateTask() {
+        return new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    LOG.log(Level.INFO, "Hey I've started");
+
+                    URL url = new URL("http://localhost:8080/web-app/hello");
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("GET");
+                    con.setConnectTimeout(10000);
+                    con.setReadTimeout(10000);
+
+                    int status = con.getResponseCode();
+                    LOG.log(Level.INFO, "Call activate endpoint status: " + status);
+                } catch (Exception e) {
+                    LOG.log(Level.INFO, "Event handler has failed" + e.getMessage());
+                }
+            }
+        };
     }
 }
