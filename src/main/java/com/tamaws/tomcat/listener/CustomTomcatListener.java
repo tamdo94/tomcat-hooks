@@ -51,7 +51,7 @@ public class CustomTomcatListener implements LifecycleListener {
                 try {
                     LOG.log(Level.INFO, "Hey I've started");
 
-                    URL url = new URL("http://localhost:8080/web-app/hello");
+                    URL url = new URL("http://localhost:8080/hello");
                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
                     con.setRequestMethod("GET");
                     con.setConnectTimeout(10000);
